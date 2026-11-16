@@ -47,9 +47,9 @@ public class DataGenApp {
         AnomalyConfig anomalyConfig = AnomalyConfig.from(conf);
 
         int scale = conf.getInt("datagen.scale", 1);
-        int workCentersPerSite = conf.getInt("datagen.workcenters.per.site", 8);
-        int partCount = conf.getInt("datagen.part.count", 200);
-        int userCount = conf.getInt("datagen.user.count", 50);
+        int workCentersPerSite = conf.getInt("datagen.workcenters.per.site", 29);
+        int partCount = conf.getInt("datagen.part.count", 200000);
+        int userCount = conf.getInt("datagen.user.count", 1000);
         int orderCount = scale * conf.getInt("datagen.order.count", 300);
         int manualCount = scale * conf.getInt("datagen.manual.report.count", 2000);
         int barcodeCount = scale * conf.getInt("datagen.barcode.report.count", 3000);

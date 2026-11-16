@@ -31,15 +31,14 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
-        <!-- datagen 是普通 Java 应用，不跑在 Flink 上，日志实现要打进 jar -->
+        <!-- datagen 是普通 Java 应用，不跑在 Flink 上，日志实现要打进 jar。
+             根因：common 里的 clickhouse-jdbc（classifier=shaded-all）把 slf4j-api 2.0.7 打进 fat jar 了
+             （阴影包内嵌、Maven 排除不掉），所以绑定必须匹配 slf4j 2.x——用 slf4j-simple 2.0.7
+             （提供 SLF4JServiceProvider），不能用 1.7.x 的 log4j-slf4j-impl（其 StaticLoggerBinder 会被 2.x 忽略）。 -->
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.7</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
