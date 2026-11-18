@@ -62,7 +62,6 @@ public abstract class ClickHouseBatchSink<T> extends RichSinkFunction<T> impleme
     private final long flushIntervalMs;
 
     private transient Connection connection;
-    private transient PreparedStatement statement;
     private transient List<T> buffer;
     private transient ScheduledExecutorService scheduler;
     private transient volatile Exception asyncFlushError;
@@ -97,7 +96,6 @@ public abstract class ClickHouseBatchSink<T> extends RichSinkFunction<T> impleme
 
         this.connection = DriverManager.getConnection(jdbcUrl, username, password);
         this.connection.setAutoCommit(true);
-        this.statement = connection.prepareStatement(insertSql());
 
         MetricGroup group = getRuntimeContext().getMetricGroup().addGroup(MetricNames.GROUP);
         this.writtenRows = group.counter(MetricNames.CK_WRITTEN_ROWS);
@@ -158,12 +156,15 @@ public abstract class ClickHouseBatchSink<T> extends RichSinkFunction<T> impleme
             return;
         }
         long start = System.currentTimeMillis();
-        for (T value : buffer) {
-            bindRow(statement, value);
-            statement.addBatch();
+        // 每次 flush 用新的 PreparedStatement：clickhouse-jdbc 0.8.x 复用同一 statement 时
+        // executeBatch/clearBatch 会累积批（重复 INSERT 之前的行），导致数据翻倍、SQL 字符串暴涨 OOM。
+        try (PreparedStatement ps = connection.prepareStatement(insertSql())) {
+            for (T value : buffer) {
+                bindRow(ps, value);
+                ps.addBatch();
+            }
+            ps.executeBatch();
         }
-        statement.executeBatch();
-        statement.clearBatch();
 
         int flushed = buffer.size();
         buffer.clear();
@@ -195,9 +196,6 @@ public abstract class ClickHouseBatchSink<T> extends RichSinkFunction<T> impleme
                 }
             }
         } finally {
-            if (statement != null) {
-                statement.close();
-            }
             if (connection != null) {
                 connection.close();
             }
