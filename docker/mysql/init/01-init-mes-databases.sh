@@ -15,20 +15,6 @@ set -euo pipefail
 COMPANIES="zh zz hf wh cq"
 MYSQL="mysql -uroot -p${MYSQL_ROOT_PASSWORD} --default-character-set=utf8mb4"
 
-echo "[mes-production-monitor] 创建账号..."
-$MYSQL <<'SQL'
--- CDC 专用账号：需要 REPLICATION 权限才能读 binlog（见文档 12 节坑 #2）
-CREATE USER IF NOT EXISTS 'cdc'@'%' IDENTIFIED WITH mysql_native_password BY 'cdc123456';
-GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'cdc'@'%';
-
--- 应用账号：造数器和维表 bootstrap 用
-CREATE USER IF NOT EXISTS 'mes_monitor'@'%' IDENTIFIED WITH mysql_native_password BY 'mesMonitor123456';
-GRANT ALL PRIVILEGES ON `mes_old_%`.* TO 'mes_monitor'@'%';
-GRANT ALL PRIVILEGES ON `mes_new_%`.* TO 'mes_monitor'@'%';
-
-FLUSH PRIVILEGES;
-SQL
-
 # ------------------------------------------------------------------------------
 # 公共 schema：新旧 MES 都有
 # ------------------------------------------------------------------------------
