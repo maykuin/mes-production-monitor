@@ -34,7 +34,7 @@
   另外 `flink-connector-kafka` 自 Flink 1.17 起已外置，**不存在 `1.18.1` 这个版本号**，
   1.18 对应的是 `3.0.2-1.18`。
 - 解决：Flink 1.18.1 + Flink CDC **3.2.1**（groupId 已改为 `org.apache.flink`）。
-  保守方案是 Flink 1.17.2 + CDC 2.4.2。见 `技术设计文档.md` 4.1。
+  保守方案是 Flink 1.17.2 + CDC 2.4.2。见 `technical-design.md` 4。
 - 面试可讲点：connector 外置后的版本号规则（`{connector版本}-{flink版本}`）、
   为什么用 `flink-sql-connector-mysql-cdc`（已 shade）而不是 `flink-connector-mysql-cdc`
   （需要自己对齐 `flink-shaded-guava`）。
